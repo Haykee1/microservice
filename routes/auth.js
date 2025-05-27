@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const users = require("../model/user");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
+const bcrypt = require("bcryptjs");
 
 router.get("/profile", authMiddleware, (req, res) => {
   res.json({ message: `welcome, ${req.user.username}` });
@@ -19,7 +20,7 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exist" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new UserActivation({ username, password: hashedPassword });
+    const newUser = new users({ username, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: "User registered" });
@@ -34,7 +35,7 @@ router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await users.findOne({ username });
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
